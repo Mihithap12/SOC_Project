@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.farmercustomer.buyerservice.controller.BuyerControllerTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.443 s -- in com.farmercustomer.buyerservice.controller.BuyerControllerTest

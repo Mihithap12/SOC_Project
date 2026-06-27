@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FarmerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">farmer-service</a> &gt; <a href="index.source.html" class="el_package">com.farmercustomer.farmerservice.controller</a> &gt; <span class="el_source">FarmerController.java</span></div><h1>FarmerController.java</h1><pre class="source lang-java linenums">package com.farmercustomer.farmerservice.controller;
+
+import com.farmercustomer.farmerservice.entity.Farmer;
+import com.farmercustomer.farmerservice.repository.FarmerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(&quot;/api/farmers&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+<span class="fc" id="L15">public class FarmerController {</span>
+
+    @Autowired
+    private FarmerRepository farmerRepository;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;Farmer&gt;&gt; getAllFarmers() {
+<span class="fc" id="L22">        return ResponseEntity.ok(farmerRepository.findAll());</span>
+    }
+
+    @GetMapping(&quot;/{userId}&quot;)
+    public ResponseEntity&lt;?&gt; getFarmerByUserId(@PathVariable(&quot;userId&quot;) Long userId) {
+<span class="fc" id="L27">        Optional&lt;Farmer&gt; farmerOpt = farmerRepository.findByUserId(userId);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (farmerOpt.isPresent()) {</span>
+<span class="fc" id="L29">            return ResponseEntity.ok(farmerOpt.get());</span>
+        }
+<span class="fc" id="L31">        return ResponseEntity.notFound().build();</span>
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;Farmer&gt; saveOrUpdateFarmer(@RequestBody Farmer farmer) {
+<span class="fc" id="L36">        Optional&lt;Farmer&gt; existingOpt = farmerRepository.findByUserId(farmer.getUserId());</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (existingOpt.isPresent()) {</span>
+<span class="fc" id="L38">            Farmer existing = existingOpt.get();</span>
+<span class="fc" id="L39">            existing.setFarmName(farmer.getFarmName());</span>
+<span class="fc" id="L40">            existing.setFarmLocation(farmer.getFarmLocation());</span>
+<span class="fc" id="L41">            existing.setFarmSize(farmer.getFarmSize());</span>
+<span class="fc" id="L42">            existing.setPrimaryCrop(farmer.getPrimaryCrop());</span>
+<span class="fc" id="L43">            existing.setContactNumber(farmer.getContactNumber());</span>
+<span class="fc" id="L44">            return ResponseEntity.ok(farmerRepository.save(existing));</span>
+        }
+<span class="fc" id="L46">        return ResponseEntity.ok(farmerRepository.save(farmer));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

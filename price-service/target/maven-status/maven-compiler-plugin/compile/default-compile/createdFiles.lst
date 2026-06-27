@@ -1,0 +1,4 @@
+com\farmercustomer\priceservice\controller\PriceController.class
+com\farmercustomer\priceservice\repository\CropPriceRepository.class
+com\farmercustomer\priceservice\PriceServiceApplication.class
+com\farmercustomer\priceservice\entity\CropPrice.class

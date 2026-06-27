@@ -1,0 +1,422 @@
+# -------------------------------------------------------------
+# User Service (Port 8081)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  ports:
+    - port: 8081
+      targetPort: 8081
+  selector:
+    app: user-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: user-service:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+
+---
+# -------------------------------------------------------------
+# Farmer Service (Port 8082)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: farmer-service
+spec:
+  ports:
+    - port: 8082
+      targetPort: 8082
+  selector:
+    app: farmer-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: farmer-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: farmer-service
+  template:
+    metadata:
+      labels:
+        app: farmer-service
+    spec:
+      containers:
+        - name: farmer-service
+          image: farmer-service:latest
+          ports:
+            - containerPort: 8082
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+
+---
+# -------------------------------------------------------------
+# Buyer Service (Port 8083)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: buyer-service
+spec:
+  ports:
+    - port: 8083
+      targetPort: 8083
+  selector:
+    app: buyer-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buyer-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: buyer-service
+  template:
+    metadata:
+      labels:
+        app: buyer-service
+    spec:
+      containers:
+        - name: buyer-service
+          image: buyer-service:latest
+          ports:
+            - containerPort: 8083
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+
+---
+# -------------------------------------------------------------
+# Marketplace Service (Port 8084)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: marketplace-service
+spec:
+  ports:
+    - port: 8084
+      targetPort: 8084
+  selector:
+    app: marketplace-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketplace-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: marketplace-service
+  template:
+    metadata:
+      labels:
+        app: marketplace-service
+    spec:
+      containers:
+        - name: marketplace-service
+          image: marketplace-service:latest
+          ports:
+            - containerPort: 8084
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+
+---
+# -------------------------------------------------------------
+# Order Service (Port 8085)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+spec:
+  ports:
+    - port: 8085
+      targetPort: 8085
+  selector:
+    app: order-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+        - name: order-service
+          image: order-service:latest
+          ports:
+            - containerPort: 8085
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+            - name: MARKETPLACE_SERVICE_HOST
+              value: marketplace-service
+            - name: PAYMENT_SERVICE_HOST
+              value: payment-service
+            - name: TRANSPORT_SERVICE_HOST
+              value: transport-service
+            - name: NOTIFICATION_SERVICE_HOST
+              value: notification-service
+
+---
+# -------------------------------------------------------------
+# Price Service (Port 8086)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: price-service
+spec:
+  ports:
+    - port: 8086
+      targetPort: 8086
+  selector:
+    app: price-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: price-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: price-service
+  template:
+    metadata:
+      labels:
+        app: price-service
+    spec:
+      containers:
+        - name: price-service
+          image: price-service:latest
+          ports:
+            - containerPort: 8086
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+
+---
+# -------------------------------------------------------------
+# Payment Service (Port 8087)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+spec:
+  ports:
+    - port: 8087
+      targetPort: 8087
+  selector:
+    app: payment-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: payment-service:latest
+          ports:
+            - containerPort: 8087
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+
+---
+# -------------------------------------------------------------
+# Transport Service (Port 8088)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: transport-service
+spec:
+  ports:
+    - port: 8088
+      targetPort: 8088
+  selector:
+    app: transport-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transport-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transport-service
+  template:
+    metadata:
+      labels:
+        app: transport-service
+    spec:
+      containers:
+        - name: transport-service
+          image: transport-service:latest
+          ports:
+            - containerPort: 8088
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+
+---
+# -------------------------------------------------------------
+# Notification Service (Port 8089)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+spec:
+  ports:
+    - port: 8089
+      targetPort: 8089
+  selector:
+    app: notification-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: notification-service:latest
+          ports:
+            - containerPort: 8089
+          env:
+            - name: DATABASE_HOST
+              value: mysql
+            - name: DATABASE_USER
+              value: root
+            - name: DATABASE_PASSWORD
+              value: root
+
+---
+# -------------------------------------------------------------
+# Weather Service (Port 8090)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: weather-service
+spec:
+  ports:
+    - port: 8090
+      targetPort: 8090
+  selector:
+    app: weather-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-service
+  template:
+    metadata:
+      labels:
+        app: weather-service
+    spec:
+      containers:
+        - name: weather-service
+          image: weather-service:latest
+          ports:
+            - containerPort: 8090
+          env:
+            - name: WEATHER_API_KEY
+              value: ""

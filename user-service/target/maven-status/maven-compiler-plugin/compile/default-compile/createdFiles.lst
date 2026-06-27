@@ -1,0 +1,8 @@
+com\farmercustomer\userservice\repository\UserRepository.class
+com\farmercustomer\userservice\dto\AuthRequest.class
+com\farmercustomer\userservice\UserServiceApplication.class
+com\farmercustomer\userservice\dto\AuthResponse.class
+com\farmercustomer\userservice\config\SecurityConfig.class
+com\farmercustomer\userservice\controller\UserController.class
+com\farmercustomer\userservice\config\JwtUtil.class
+com\farmercustomer\userservice\entity\User.class

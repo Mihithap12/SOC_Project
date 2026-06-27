@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BuyerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">buyer-service</a> &gt; <a href="index.source.html" class="el_package">com.farmercustomer.buyerservice.controller</a> &gt; <span class="el_source">BuyerController.java</span></div><h1>BuyerController.java</h1><pre class="source lang-java linenums">package com.farmercustomer.buyerservice.controller;
+
+import com.farmercustomer.buyerservice.entity.Buyer;
+import com.farmercustomer.buyerservice.repository.BuyerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(&quot;/api/buyers&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+<span class="fc" id="L15">public class BuyerController {</span>
+
+    @Autowired
+    private BuyerRepository buyerRepository;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;Buyer&gt;&gt; getAllBuyers() {
+<span class="fc" id="L22">        return ResponseEntity.ok(buyerRepository.findAll());</span>
+    }
+
+    @GetMapping(&quot;/{userId}&quot;)
+    public ResponseEntity&lt;?&gt; getBuyerByUserId(@PathVariable(&quot;userId&quot;) Long userId) {
+<span class="fc" id="L27">        Optional&lt;Buyer&gt; buyerOpt = buyerRepository.findByUserId(userId);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (buyerOpt.isPresent()) {</span>
+<span class="fc" id="L29">            return ResponseEntity.ok(buyerOpt.get());</span>
+        }
+<span class="fc" id="L31">        return ResponseEntity.notFound().build();</span>
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;Buyer&gt; saveOrUpdateBuyer(@RequestBody Buyer buyer) {
+<span class="fc" id="L36">        Optional&lt;Buyer&gt; existingOpt = buyerRepository.findByUserId(buyer.getUserId());</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (existingOpt.isPresent()) {</span>
+<span class="fc" id="L38">            Buyer existing = existingOpt.get();</span>
+<span class="fc" id="L39">            existing.setCompanyName(buyer.getCompanyName());</span>
+<span class="fc" id="L40">            existing.setBusinessLicense(buyer.getBusinessLicense());</span>
+<span class="fc" id="L41">            existing.setShippingAddress(buyer.getShippingAddress());</span>
+<span class="fc" id="L42">            existing.setContactNumber(buyer.getContactNumber());</span>
+<span class="fc" id="L43">            return ResponseEntity.ok(buyerRepository.save(existing));</span>
+        }
+<span class="fc" id="L45">        return ResponseEntity.ok(buyerRepository.save(buyer));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,4 @@
+com\farmercustomer\transportservice\TransportServiceApplication.class
+com\farmercustomer\transportservice\controller\TransportController.class
+com\farmercustomer\transportservice\entity\Delivery.class
+com\farmercustomer\transportservice\repository\DeliveryRepository.class

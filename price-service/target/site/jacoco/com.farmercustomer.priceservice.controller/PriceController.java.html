@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PriceController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">price-service</a> &gt; <a href="index.source.html" class="el_package">com.farmercustomer.priceservice.controller</a> &gt; <span class="el_source">PriceController.java</span></div><h1>PriceController.java</h1><pre class="source lang-java linenums">package com.farmercustomer.priceservice.controller;
+
+import com.farmercustomer.priceservice.entity.CropPrice;
+import com.farmercustomer.priceservice.repository.CropPriceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(&quot;/api/prices&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+<span class="fc" id="L17">public class PriceController {</span>
+
+    @Autowired
+    private CropPriceRepository cropPriceRepository;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;CropPrice&gt;&gt; getAllPrices() {
+<span class="fc" id="L24">        return ResponseEntity.ok(cropPriceRepository.findAll());</span>
+    }
+
+    @GetMapping(&quot;/{cropName}&quot;)
+    public ResponseEntity&lt;?&gt; getPriceByCropName(@PathVariable(&quot;cropName&quot;) String cropName) {
+<span class="fc" id="L29">        Optional&lt;CropPrice&gt; priceOpt = cropPriceRepository.findByCropName(cropName);</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (priceOpt.isPresent()) {</span>
+<span class="fc" id="L31">            return ResponseEntity.ok(priceOpt.get());</span>
+        }
+<span class="fc" id="L33">        return ResponseEntity.notFound().build();</span>
+    }
+
+    @PostMapping(&quot;/update&quot;)
+    public ResponseEntity&lt;CropPrice&gt; updatePrice(@RequestBody CropPrice cropPrice) {
+<span class="fc" id="L38">        String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;));</span>
+<span class="fc" id="L39">        Optional&lt;CropPrice&gt; existingOpt = cropPriceRepository.findByCropName(cropPrice.getCropName());</span>
+        
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (existingOpt.isPresent()) {</span>
+<span class="fc" id="L42">            CropPrice existing = existingOpt.get();</span>
+<span class="fc" id="L43">            existing.setYesterdayPricePerKg(existing.getCurrentPricePerKg());</span>
+<span class="fc" id="L44">            existing.setCurrentPricePerKg(cropPrice.getCurrentPricePerKg());</span>
+<span class="fc" id="L45">            existing.setLastUpdated(nowStr);</span>
+<span class="fc" id="L46">            return ResponseEntity.ok(cropPriceRepository.save(existing));</span>
+        } else {
+<span class="fc" id="L48">            cropPrice.setYesterdayPricePerKg(cropPrice.getCurrentPricePerKg());</span>
+<span class="fc" id="L49">            cropPrice.setLastUpdated(nowStr);</span>
+<span class="fc" id="L50">            return ResponseEntity.ok(cropPriceRepository.save(cropPrice));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

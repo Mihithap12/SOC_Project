@@ -1,0 +1,5 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+order-service,com.farmercustomer.orderservice.service,OrderSagaOrchestrator,446,0,22,0,95,0,14,0,3,0
+order-service,com.farmercustomer.orderservice.controller,OrderController,0,37,0,0,0,7,0,6,0,6
+order-service,com.farmercustomer.orderservice.entity,Order,393,32,77,1,10,2,55,8,16,8
+order-service,com.farmercustomer.orderservice,OrderServiceApplication,12,0,0,0,4,0,3,0,3,0

@@ -1,0 +1,4 @@
+com\farmercustomer\farmerservice\entity\Farmer.class
+com\farmercustomer\farmerservice\FarmerServiceApplication.class
+com\farmercustomer\farmerservice\repository\FarmerRepository.class
+com\farmercustomer\farmerservice\controller\FarmerController.class

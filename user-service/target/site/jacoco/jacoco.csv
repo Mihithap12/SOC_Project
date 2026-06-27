@@ -1,0 +1,8 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+user-service,com.farmercustomer.userservice.config,SecurityConfig,124,0,0,0,17,0,8,0,8,0
+user-service,com.farmercustomer.userservice.config,JwtUtil,149,0,6,0,33,0,15,0,12,0
+user-service,com.farmercustomer.userservice.controller,UserController,0,152,0,10,0,24,0,10,0,5
+user-service,com.farmercustomer.userservice.entity,User,289,50,61,1,2,8,37,14,6,14
+user-service,com.farmercustomer.userservice.dto,AuthResponse,269,27,54,0,6,3,42,3,15,3
+user-service,com.farmercustomer.userservice.dto,AuthRequest,107,17,22,0,1,4,16,5,5,5
+user-service,com.farmercustomer.userservice,UserServiceApplication,8,0,0,0,3,0,2,0,2,0

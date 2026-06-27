@@ -1,0 +1,5 @@
+com\farmercustomer\orderservice\controller\OrderController.class
+com\farmercustomer\orderservice\repository\OrderRepository.class
+com\farmercustomer\orderservice\entity\Order.class
+com\farmercustomer\orderservice\OrderServiceApplication.class
+com\farmercustomer\orderservice\service\OrderSagaOrchestrator.class

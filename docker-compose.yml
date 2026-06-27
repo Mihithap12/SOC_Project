@@ -1,0 +1,222 @@
+version: '3.8'
+
+services:
+  # Databases
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Microservices (Farmer System)
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  farmer-service:
+    build: ./farmer-service
+    container_name: farmer-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  buyer-service:
+    build: ./buyer-service
+    container_name: buyer-service
+    ports:
+      - "8083:8083"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  marketplace-service:
+    build: ./marketplace-service
+    container_name: marketplace-service
+    ports:
+      - "8084:8084"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "8085:8085"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+      - MARKETPLACE_SERVICE_HOST=marketplace-service
+      - PAYMENT_SERVICE_HOST=payment-service
+      - TRANSPORT_SERVICE_HOST=transport-service
+      - NOTIFICATION_SERVICE_HOST=notification-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      marketplace-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      transport-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+
+  price-service:
+    build: ./price-service
+    container_name: price-service
+    ports:
+      - "8086:8086"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8087:8087"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  transport-service:
+    build: ./transport-service
+    container_name: transport-service
+    ports:
+      - "8088:8088"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8089:8089"
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  weather-service:
+    build: ./weather-service
+    container_name: weather-service
+    ports:
+      - "8090:8090"
+    environment:
+      - WEATHER_API_KEY=
+
+  # NodeJS Services
+  government-service:
+    build: ./government-service
+    container_name: government-service
+    ports:
+      - "8091:8091"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/govt_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  ngo-service:
+    build: ./ngo-service
+    container_name: ngo-service
+    ports:
+      - "8092:8092"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/ngo_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  # React Frontends
+  frontend-farmer:
+    build:
+      context: ./frontend-farmer
+      dockerfile: Dockerfile
+    container_name: frontend-farmer
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-service
+      - marketplace-service
+      - order-service
+
+  frontend-government:
+    build:
+      context: ./frontend-government
+      dockerfile: Dockerfile
+    container_name: frontend-government
+    ports:
+      - "3001:3001"
+    depends_on:
+      - government-service
+
+  frontend-ngo:
+    build:
+      context: ./frontend-ngo
+      dockerfile: Dockerfile
+    container_name: frontend-ngo
+    ports:
+      - "3002:3002"
+    depends_on:
+      - ngo-service

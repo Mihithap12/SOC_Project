@@ -1,0 +1,5 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+notification-service,com.farmercustomer.notificationservice.entity,Notification,218,35,46,0,2,6,29,10,6,10
+notification-service,com.farmercustomer.notificationservice.controller,NotificationController.MapBody,0,10,0,0,0,3,0,3,0,3
+notification-service,com.farmercustomer.notificationservice.controller,NotificationController,0,65,0,0,0,15,0,5,0,5
+notification-service,com.farmercustomer.notificationservice,NotificationServiceApplication,8,0,0,0,3,0,2,0,2,0

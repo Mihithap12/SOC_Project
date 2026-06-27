@@ -1,0 +1,4 @@
+com\farmercustomer\marketplaceservice\controller\MarketplaceController.class
+com\farmercustomer\marketplaceservice\repository\ProductListingRepository.class
+com\farmercustomer\marketplaceservice\entity\ProductListing.class
+com\farmercustomer\marketplaceservice\MarketplaceServiceApplication.class

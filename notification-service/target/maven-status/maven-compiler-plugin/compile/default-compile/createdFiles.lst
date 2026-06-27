@@ -1,0 +1,5 @@
+com\farmercustomer\notificationservice\entity\Notification.class
+com\farmercustomer\notificationservice\controller\NotificationController$MapBody.class
+com\farmercustomer\notificationservice\NotificationServiceApplication.class
+com\farmercustomer\notificationservice\repository\NotificationRepository.class
+com\farmercustomer\notificationservice\controller\NotificationController.class

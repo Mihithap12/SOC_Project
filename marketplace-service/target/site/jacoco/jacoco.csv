@@ -1,0 +1,4 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+marketplace-service,com.farmercustomer.marketplaceservice,MarketplaceServiceApplication,8,0,0,0,3,0,2,0,2,0
+marketplace-service,com.farmercustomer.marketplaceservice.controller,MarketplaceController,0,80,1,7,0,18,1,10,0,7
+marketplace-service,com.farmercustomer.marketplaceservice.entity,ProductListing,383,42,77,1,8,4,52,11,13,11

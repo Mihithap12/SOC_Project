@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">notification-service</a> &gt; <a href="index.source.html" class="el_package">com.farmercustomer.notificationservice.controller</a> &gt; <span class="el_source">NotificationController.java</span></div><h1>NotificationController.java</h1><pre class="source lang-java linenums">package com.farmercustomer.notificationservice.controller;
+
+import com.farmercustomer.notificationservice.entity.Notification;
+import com.farmercustomer.notificationservice.repository.NotificationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/notifications&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+<span class="fc" id="L15">public class NotificationController {</span>
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;Notification&gt;&gt; getAllNotifications() {
+<span class="fc" id="L22">        return ResponseEntity.ok(notificationRepository.findAll());</span>
+    }
+
+    @PostMapping(&quot;/send&quot;)
+    public ResponseEntity&lt;Notification&gt; sendNotification(@RequestBody Notification notification) {
+<span class="fc" id="L27">        notification.setTimestamp(LocalDateTime.now().toString());</span>
+<span class="fc" id="L28">        notification.setStatus(&quot;SENT&quot;);</span>
+        
+        // Simulating sending SMS or Email
+<span class="fc" id="L31">        System.out.println(&quot;&gt;&gt;&gt; [SMS/Email Simulator] User ID: &quot; + notification.getUserId() + </span>
+<span class="fc" id="L32">                           &quot; | Message: &quot; + notification.getMessage());</span>
+        
+<span class="fc" id="L34">        return ResponseEntity.ok(notificationRepository.save(notification));</span>
+    }
+
+    @PostMapping(&quot;/broadcast&quot;)
+    public ResponseEntity&lt;Notification&gt; broadcast(@RequestBody MapBody body) {
+<span class="fc" id="L39">        Notification notification = new Notification();</span>
+<span class="fc" id="L40">        notification.setUserId(null); // Broadcast</span>
+<span class="fc" id="L41">        notification.setMessage(body.getMessage());</span>
+<span class="fc" id="L42">        notification.setTimestamp(LocalDateTime.now().toString());</span>
+<span class="fc" id="L43">        notification.setStatus(&quot;SENT&quot;);</span>
+
+<span class="fc" id="L45">        System.out.println(&quot;&gt;&gt;&gt; [SMS/Email Broadcast Simulator] Alert: &quot; + body.getMessage());</span>
+
+<span class="fc" id="L47">        return ResponseEntity.ok(notificationRepository.save(notification));</span>
+    }
+
+    @GetMapping(&quot;/user/{userId}&quot;)
+    public ResponseEntity&lt;List&lt;Notification&gt;&gt; getNotificationsForUser(@PathVariable(&quot;userId&quot;) Long userId) {
+<span class="fc" id="L52">        return ResponseEntity.ok(notificationRepository.findByUserIdOrUserIdIsNull(userId));</span>
+    }
+
+    // Static nested DTO for request mapping
+<span class="fc" id="L56">    public static class MapBody {</span>
+        private String message;
+<span class="fc" id="L58">        public String getMessage() { return message; }</span>
+<span class="fc" id="L59">        public void setMessage(String message) { this.message = message; }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

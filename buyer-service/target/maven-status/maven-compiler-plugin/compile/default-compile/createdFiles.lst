@@ -1,0 +1,4 @@
+com\farmercustomer\buyerservice\BuyerServiceApplication.class
+com\farmercustomer\buyerservice\controller\BuyerController.class
+com\farmercustomer\buyerservice\repository\BuyerRepository.class
+com\farmercustomer\buyerservice\entity\Buyer.class

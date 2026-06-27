@@ -1,0 +1,4 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+buyer-service,com.farmercustomer.buyerservice.controller,BuyerController,0,67,0,4,0,15,0,6,0,4
+buyer-service,com.farmercustomer.buyerservice.entity,Buyer,249,47,53,1,2,7,32,13,5,13
+buyer-service,com.farmercustomer.buyerservice,BuyerServiceApplication,8,0,0,0,3,0,2,0,2,0
