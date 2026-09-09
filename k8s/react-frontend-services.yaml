@@ -6,11 +6,10 @@ kind: Service
 metadata:
   name: frontend-farmer
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - port: 3000
       targetPort: 3000
-      nodePort: 30000
   selector:
     app: frontend-farmer
 ---
@@ -43,11 +42,10 @@ kind: Service
 metadata:
   name: frontend-government
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - port: 3001
       targetPort: 3001
-      nodePort: 30001
   selector:
     app: frontend-government
 ---
@@ -80,11 +78,10 @@ kind: Service
 metadata:
   name: frontend-ngo
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - port: 3002
       targetPort: 3002
-      nodePort: 30002
   selector:
     app: frontend-ngo
 ---
