@@ -8,6 +8,7 @@ pipeline {
     }
 
     environment {
+        KUBECONFIG       = 'C:/Users/ASUS/.kube/config'
         PUSH_TO_REGISTRY = 'false'
         DOCKER_REGISTRY  = 'registry.local:5000'
         IMAGE_TAG        = "${env.BUILD_NUMBER}"
