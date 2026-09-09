@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: frontend-farmer
-          image: frontend-farmer:latest
+          image: project-frontend-farmer:latest
           ports:
             - containerPort: 3000
 
@@ -65,7 +65,7 @@ spec:
     spec:
       containers:
         - name: frontend-government
-          image: frontend-government:latest
+          image: project-frontend-government:latest
           ports:
             - containerPort: 3001
 
@@ -101,6 +101,6 @@ spec:
     spec:
       containers:
         - name: frontend-ngo
-          image: frontend-ngo:latest
+          image: project-frontend-ngo:latest
           ports:
             - containerPort: 3002

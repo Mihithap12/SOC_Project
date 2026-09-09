@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: government-service
-          image: government-service:latest
+          image: project-government-service:latest
           ports:
             - containerPort: 8091
           env:
@@ -66,7 +66,7 @@ spec:
     spec:
       containers:
         - name: ngo-service
-          image: ngo-service:latest
+          image: project-ngo-service:latest
           ports:
             - containerPort: 8092
           env:

@@ -8,44 +8,38 @@ pipeline {
     }
 
     environment {
-        DOCKER_REGISTRY = 'registry.local:5000'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        PUSH_TO_REGISTRY = 'false'
+        DOCKER_REGISTRY  = 'registry.local:5000'
+        IMAGE_TAG        = "${env.BUILD_NUMBER}"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                echo 'Checking out source code from GitHub...'
                 checkout scm
             }
         }
 
-        stage('Build and Test Java Backends') {
+        stage('Build & Test Java Backends') {
             steps {
-                echo 'Building and testing Spring Boot services...'
-
-                bat '''
-                    mvn clean test package
-                '''
+                bat 'mvn clean test package'
             }
         }
 
         stage('Build NodeJS Services') {
             parallel {
-
                 stage('Government Service') {
                     steps {
                         dir('government-service') {
-                            bat 'npm install'
+                            bat 'npm install --production'
                         }
                     }
                 }
-
                 stage('NGO Service') {
                     steps {
                         dir('ngo-service') {
-                            bat 'npm install'
+                            bat 'npm install --production'
                         }
                     }
                 }
@@ -54,7 +48,6 @@ pipeline {
 
         stage('Build React Frontends') {
             parallel {
-
                 stage('Frontend Farmer') {
                     steps {
                         dir('frontend-farmer') {
@@ -63,7 +56,6 @@ pipeline {
                         }
                     }
                 }
-
                 stage('Frontend Government') {
                     steps {
                         dir('frontend-government') {
@@ -72,7 +64,6 @@ pipeline {
                         }
                     }
                 }
-
                 stage('Frontend NGO') {
                     steps {
                         dir('frontend-ngo') {
@@ -86,149 +77,99 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                echo 'Building Docker images...'
-
                 bat """
-                    docker build -t ${DOCKER_REGISTRY}/user-service:${IMAGE_TAG} ./user-service
-                    docker build -t ${DOCKER_REGISTRY}/farmer-service:${IMAGE_TAG} ./farmer-service
-                    docker build -t ${DOCKER_REGISTRY}/buyer-service:${IMAGE_TAG} ./buyer-service
-                    docker build -t ${DOCKER_REGISTRY}/marketplace-service:${IMAGE_TAG} ./marketplace-service
-                    docker build -t ${DOCKER_REGISTRY}/order-service:${IMAGE_TAG} ./order-service
-                    docker build -t ${DOCKER_REGISTRY}/price-service:${IMAGE_TAG} ./price-service
-                    docker build -t ${DOCKER_REGISTRY}/payment-service:${IMAGE_TAG} ./payment-service
-                    docker build -t ${DOCKER_REGISTRY}/transport-service:${IMAGE_TAG} ./transport-service
-                    docker build -t ${DOCKER_REGISTRY}/notification-service:${IMAGE_TAG} ./notification-service
-                    docker build -t ${DOCKER_REGISTRY}/weather-service:${IMAGE_TAG} ./weather-service
+                    docker build -t project-user-service:latest -t project-user-service:${IMAGE_TAG} ./user-service
+                    docker build -t project-farmer-service:latest -t project-farmer-service:${IMAGE_TAG} ./farmer-service
+                    docker build -t project-buyer-service:latest -t project-buyer-service:${IMAGE_TAG} ./buyer-service
+                    docker build -t project-marketplace-service:latest -t project-marketplace-service:${IMAGE_TAG} ./marketplace-service
+                    docker build -t project-order-service:latest -t project-order-service:${IMAGE_TAG} ./order-service
+                    docker build -t project-price-service:latest -t project-price-service:${IMAGE_TAG} ./price-service
+                    docker build -t project-payment-service:latest -t project-payment-service:${IMAGE_TAG} ./payment-service
+                    docker build -t project-transport-service:latest -t project-transport-service:${IMAGE_TAG} ./transport-service
+                    docker build -t project-notification-service:latest -t project-notification-service:${IMAGE_TAG} ./notification-service
+                    docker build -t project-weather-service:latest -t project-weather-service:${IMAGE_TAG} ./weather-service
 
-                    docker build -t ${DOCKER_REGISTRY}/government-service:${IMAGE_TAG} ./government-service
-                    docker build -t ${DOCKER_REGISTRY}/ngo-service:${IMAGE_TAG} ./ngo-service
+                    docker build -t project-government-service:latest -t project-government-service:${IMAGE_TAG} ./government-service
+                    docker build -t project-ngo-service:latest -t project-ngo-service:${IMAGE_TAG} ./ngo-service
 
-                    docker build -t ${DOCKER_REGISTRY}/frontend-farmer:${IMAGE_TAG} ./frontend-farmer
-                    docker build -t ${DOCKER_REGISTRY}/frontend-government:${IMAGE_TAG} ./frontend-government
-                    docker build -t ${DOCKER_REGISTRY}/frontend-ngo:${IMAGE_TAG} ./frontend-ngo
+                    docker build -t project-frontend-farmer:latest -t project-frontend-farmer:${IMAGE_TAG} ./frontend-farmer
+                    docker build -t project-frontend-government:latest -t project-frontend-government:${IMAGE_TAG} ./frontend-government
+                    docker build -t project-frontend-ngo:latest -t project-frontend-ngo:${IMAGE_TAG} ./frontend-ngo
                 """
             }
         }
 
         stage('Push Docker Images') {
+            when {
+                expression { return env.PUSH_TO_REGISTRY == 'true' }
+            }
             steps {
-                echo 'Pushing Docker images to registry...'
-
                 bat """
-                    docker push ${DOCKER_REGISTRY}/user-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/farmer-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/buyer-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/marketplace-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/order-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/price-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/payment-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/transport-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/notification-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/weather-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-user-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-farmer-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-buyer-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-marketplace-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-order-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-price-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-payment-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-transport-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-notification-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-weather-service:${IMAGE_TAG}
 
-                    docker push ${DOCKER_REGISTRY}/government-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/ngo-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-government-service:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-ngo-service:${IMAGE_TAG}
 
-                    docker push ${DOCKER_REGISTRY}/frontend-farmer:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/frontend-government:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/frontend-ngo:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-frontend-farmer:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-frontend-government:${IMAGE_TAG}
+                    docker push ${DOCKER_REGISTRY}/project-frontend-ngo:${IMAGE_TAG}
                 """
             }
         }
 
         stage('Deploy Infrastructure') {
             steps {
-                echo 'Deploying MySQL and MongoDB...'
-
-                bat '''
-                    kubectl apply -f k8s/mysql-mongodb-infrastructure.yaml
-                '''
+                bat 'kubectl apply -f k8s/mysql-mongodb-infrastructure.yaml'
             }
         }
 
         stage('Deploy Applications') {
             steps {
-                echo 'Deploying application Kubernetes resources...'
-
-                bat '''
+                bat """
                     kubectl apply -f k8s/farmer-backend-services.yaml
                     kubectl apply -f k8s/nodejs-backend-services.yaml
                     kubectl apply -f k8s/react-frontend-services.yaml
-                '''
-            }
-        }
-
-        stage('Update Application Images') {
-            steps {
-                echo 'Updating Kubernetes deployments to the new Docker images...'
-
-                bat """
-                    kubectl set image deployment/user-service user-service=${DOCKER_REGISTRY}/user-service:${IMAGE_TAG}
-                    kubectl set image deployment/farmer-service farmer-service=${DOCKER_REGISTRY}/farmer-service:${IMAGE_TAG}
-                    kubectl set image deployment/buyer-service buyer-service=${DOCKER_REGISTRY}/buyer-service:${IMAGE_TAG}
-                    kubectl set image deployment/marketplace-service marketplace-service=${DOCKER_REGISTRY}/marketplace-service:${IMAGE_TAG}
-                    kubectl set image deployment/order-service order-service=${DOCKER_REGISTRY}/order-service:${IMAGE_TAG}
-                    kubectl set image deployment/price-service price-service=${DOCKER_REGISTRY}/price-service:${IMAGE_TAG}
-                    kubectl set image deployment/payment-service payment-service=${DOCKER_REGISTRY}/payment-service:${IMAGE_TAG}
-                    kubectl set image deployment/transport-service transport-service=${DOCKER_REGISTRY}/transport-service:${IMAGE_TAG}
-                    kubectl set image deployment/notification-service notification-service=${DOCKER_REGISTRY}/notification-service:${IMAGE_TAG}
-                    kubectl set image deployment/weather-service weather-service=${DOCKER_REGISTRY}/weather-service:${IMAGE_TAG}
-
-                    kubectl set image deployment/government-service government-service=${DOCKER_REGISTRY}/government-service:${IMAGE_TAG}
-                    kubectl set image deployment/ngo-service ngo-service=${DOCKER_REGISTRY}/ngo-service:${IMAGE_TAG}
-
-                    kubectl set image deployment/frontend-farmer frontend-farmer=${DOCKER_REGISTRY}/frontend-farmer:${IMAGE_TAG}
-                    kubectl set image deployment/frontend-government frontend-government=${DOCKER_REGISTRY}/frontend-government:${IMAGE_TAG}
-                    kubectl set image deployment/frontend-ngo frontend-ngo=${DOCKER_REGISTRY}/frontend-ngo:${IMAGE_TAG}
                 """
             }
         }
 
-        stage('Wait for Deployment') {
+        stage('Rollout & Verify Kubernetes') {
             steps {
-                echo 'Waiting for Kubernetes deployments...'
-
-                bat '''
-                    kubectl rollout status deployment/user-service
-                    kubectl rollout status deployment/farmer-service
-                    kubectl rollout status deployment/buyer-service
-                    kubectl rollout status deployment/marketplace-service
-                    kubectl rollout status deployment/order-service
-                    kubectl rollout status deployment/price-service
-                    kubectl rollout status deployment/payment-service
-                    kubectl rollout status deployment/transport-service
-                    kubectl rollout status deployment/notification-service
-                    kubectl rollout status deployment/weather-service
-
-                    kubectl rollout status deployment/government-service
-                    kubectl rollout status deployment/ngo-service
-
-                    kubectl rollout status deployment/frontend-farmer
-                    kubectl rollout status deployment/frontend-government
-                    kubectl rollout status deployment/frontend-ngo
-                '''
-            }
-        }
-
-        stage('Verify Kubernetes') {
-            steps {
-                echo 'Checking Kubernetes cluster...'
-
-                bat '''
-                    kubectl get pods
-                    kubectl get services
-                '''
+                bat """
+                    kubectl rollout restart deployment/user-service deployment/farmer-service deployment/buyer-service deployment/marketplace-service deployment/order-service deployment/price-service deployment/payment-service deployment/transport-service deployment/notification-service deployment/weather-service deployment/government-service deployment/ngo-service deployment/frontend-farmer deployment/frontend-government deployment/frontend-ngo
+                    kubectl rollout status deployment/user-service --timeout=120s
+                    kubectl rollout status deployment/farmer-service --timeout=120s
+                    kubectl rollout status deployment/buyer-service --timeout=120s
+                    kubectl rollout status deployment/marketplace-service --timeout=120s
+                    kubectl rollout status deployment/order-service --timeout=120s
+                    kubectl rollout status deployment/price-service --timeout=120s
+                    kubectl rollout status deployment/payment-service --timeout=120s
+                    kubectl rollout status deployment/transport-service --timeout=120s
+                    kubectl rollout status deployment/notification-service --timeout=120s
+                    kubectl rollout status deployment/weather-service --timeout=120s
+                    kubectl rollout status deployment/government-service --timeout=120s
+                    kubectl rollout status deployment/ngo-service --timeout=120s
+                    kubectl rollout status deployment/frontend-farmer --timeout=120s
+                    kubectl rollout status deployment/frontend-government --timeout=120s
+                    kubectl rollout status deployment/frontend-ngo --timeout=120s
+                """
             }
         }
     }
 
     post {
-        success {
-            echo 'AgriChain CI/CD pipeline completed successfully!'
-        }
-
-        failure {
-            echo 'Pipeline failed. Check the stage logs above.'
+        always {
+            bat 'kubectl get pods'
+            bat 'kubectl get services'
         }
     }
 }
