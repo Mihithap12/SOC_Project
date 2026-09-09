@@ -2,6 +2,8 @@ package com.farmercustomer.orderservice.service;
 
 import com.farmercustomer.orderservice.entity.Order;
 import com.farmercustomer.orderservice.repository.OrderRepository;
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -12,18 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Saga Orchestrator for coordinating Order Placement transactions.
+ * Saga Orchestrator using Camunda BPMN Workflow Engine.
  * 
- * DESIGN FOR CAMUNDA BPMN WORKFLOW:
- * In a Camunda-managed microservices deployment, this orchestrator's stages 
- * map to Zeebe Service Tasks. In Camunda BPMN, you would design a workflow:
- * 1. Service Task: Reserve Inventory (Job Worker: "reserve-inventory")
- * 2. Service Task: Process Payment (Job Worker: "process-payment")
- * 3. Service Task: Dispatch Transport (Job Worker: "dispatch-transport")
- * 
- * Standard boundary error events would catch failures and trigger compensation tasks:
- * - Release Inventory ("release-inventory")
- * - Refund Payment ("refund-payment")
+ * Camunda Process Definition: order-saga.bpmn
+ * Process Key: "OrderSagaProcess"
  */
 @Service
 public class OrderSagaOrchestrator {
@@ -33,6 +27,9 @@ public class OrderSagaOrchestrator {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired(required = false)
+    private RuntimeService runtimeService;
 
     @Value("${services.marketplace.url}")
     private String marketplaceUrl;
@@ -47,21 +44,41 @@ public class OrderSagaOrchestrator {
     private String notificationUrl;
 
     public Order executeOrderSaga(Order order) {
-        // Step 1: Save Order in PENDING status
         order.setStatus("PENDING");
         Order savedOrder = orderRepository.save(order);
 
+        // If Camunda Engine is running, trigger Camunda BPMN Saga Process Instance
+        if (runtimeService != null) {
+            try {
+                Map<String, Object> variables = new HashMap<>();
+                variables.put("orderId", savedOrder.getId());
+                variables.put("listingId", savedOrder.getListingId());
+                variables.put("quantity", savedOrder.getQuantity());
+                variables.put("buyerId", savedOrder.getBuyerId());
+                variables.put("shippingAddress", savedOrder.getShippingAddress() != null ? savedOrder.getShippingAddress() : "Default Address");
+
+                ProcessInstance instance = runtimeService.startProcessInstanceByKey("OrderSagaProcess", variables);
+                System.out.println(">>> [Camunda Engine] Started Order Saga Process Instance ID: " + instance.getId());
+
+                return orderRepository.findById(savedOrder.getId()).orElse(savedOrder);
+            } catch (Exception e) {
+                System.err.println(">>> [Camunda Engine Warning] Falling back to manual saga execution: " + e.getMessage());
+            }
+        }
+
+        // Fallback Manual Saga Execution if Camunda Engine is unavailable
+        return executeManualSaga(savedOrder);
+    }
+
+    private Order executeManualSaga(Order savedOrder) {
         Double oldQuantity = 0.0;
         Double pricePerKg = 0.0;
         Long farmerId = null;
         String cropName = "";
 
-        // --- STAGE 1: Reserve Inventory (Marketplace Service) ---
+        // Stage 1: Reserve Inventory
         try {
-            // Fetch product listing
-            ResponseEntity<Map> productResp = restTemplate.getForEntity(
-                    marketplaceUrl + "/" + order.getListingId(), Map.class);
-            
+            ResponseEntity<Map> productResp = restTemplate.getForEntity(marketplaceUrl + "/" + savedOrder.getListingId(), Map.class);
             if (!productResp.getStatusCode().is2xxSuccessful() || productResp.getBody() == null) {
                 throw new RuntimeException("Product listing not found");
             }
@@ -73,30 +90,23 @@ public class OrderSagaOrchestrator {
             cropName = (String) product.get("cropName");
             String status = (String) product.get("status");
 
-            if (!"AVAILABLE".equals(status) || oldQuantity < order.getQuantity()) {
-                throw new RuntimeException("Insufficient inventory or product not available");
+            if (!"AVAILABLE".equals(status) || oldQuantity < savedOrder.getQuantity()) {
+                throw new RuntimeException("Insufficient inventory");
             }
 
-            // Calculate total price
-            double totalPrice = pricePerKg * order.getQuantity();
+            double totalPrice = pricePerKg * savedOrder.getQuantity();
             savedOrder.setTotalPrice(totalPrice);
             savedOrder = orderRepository.save(savedOrder);
 
-            // Reserve quantity (update marketplace status/quantity)
-            double newQuantity = oldQuantity - order.getQuantity();
+            double newQuantity = oldQuantity - savedOrder.getQuantity();
             String newStatus = newQuantity <= 0 ? "SOLD" : "AVAILABLE";
-            
-            restTemplate.put(marketplaceUrl + "/" + order.getListingId() + 
-                    "/status?status=" + newStatus + "&quantity=" + newQuantity, null);
-
+            restTemplate.put(marketplaceUrl + "/" + savedOrder.getListingId() + "/status?status=" + newStatus + "&quantity=" + newQuantity, null);
         } catch (Exception e) {
             savedOrder.setStatus("CANCELLED");
-            orderRepository.save(savedOrder);
-            sendNotification(order.getBuyerId(), "Order failed: Inventory allocation issue. " + e.getMessage());
-            return savedOrder;
+            return orderRepository.save(savedOrder);
         }
 
-        // --- STAGE 2: Process Payment (Payment Service) ---
+        // Stage 2: Payment
         String transactionId = null;
         try {
             Map<String, Object> paymentReq = new HashMap<>();
@@ -104,9 +114,7 @@ public class OrderSagaOrchestrator {
             paymentReq.put("buyerId", savedOrder.getBuyerId());
             paymentReq.put("amount", savedOrder.getTotalPrice());
 
-            ResponseEntity<Map> paymentResp = restTemplate.postForEntity(
-                    paymentUrl + "/charge", paymentReq, Map.class);
-
+            ResponseEntity<Map> paymentResp = restTemplate.postForEntity(paymentUrl + "/charge", paymentReq, Map.class);
             if (paymentResp.getStatusCode().is2xxSuccessful() && paymentResp.getBody() != null) {
                 Map paymentBody = paymentResp.getBody();
                 Boolean success = (Boolean) paymentBody.get("success");
@@ -116,88 +124,40 @@ public class OrderSagaOrchestrator {
                     savedOrder.setStatus("PAID");
                     savedOrder = orderRepository.save(savedOrder);
                 } else {
-                    throw new RuntimeException("Payment card declined");
+                    throw new RuntimeException("Payment declined");
                 }
-            } else {
-                throw new RuntimeException("Payment Service unreachable");
             }
-
         } catch (Exception e) {
-            // Rollback inventory reservation (Compensation)
-            try {
-                restTemplate.put(marketplaceUrl + "/" + order.getListingId() + 
-                        "/status?status=AVAILABLE&quantity=" + oldQuantity, null);
-            } catch (Exception ex) {
-                // In production, queue this for manual recovery
-            }
-
+            // Compensation: Release inventory
+            restTemplate.put(marketplaceUrl + "/" + savedOrder.getListingId() + "/status?status=AVAILABLE&quantity=" + oldQuantity, null);
             savedOrder.setStatus("CANCELLED");
-            orderRepository.save(savedOrder);
-            sendNotification(order.getBuyerId(), "Order failed: Payment issue. " + e.getMessage());
-            return savedOrder;
+            return orderRepository.save(savedOrder);
         }
 
-        // --- STAGE 3: Dispatch Transport (Transport Service) ---
+        // Stage 3: Transport
         try {
             Map<String, Object> transportReq = new HashMap<>();
             transportReq.put("orderId", savedOrder.getId());
             transportReq.put("buyerId", savedOrder.getBuyerId());
             transportReq.put("address", savedOrder.getShippingAddress());
 
-            ResponseEntity<Map> transportResp = restTemplate.postForEntity(
-                    transportUrl + "/dispatch", transportReq, Map.class);
-
+            ResponseEntity<Map> transportResp = restTemplate.postForEntity(transportUrl + "/dispatch", transportReq, Map.class);
             if (transportResp.getStatusCode().is2xxSuccessful() && transportResp.getBody() != null) {
                 Map transportBody = transportResp.getBody();
-                String trackingNumber = (String) transportBody.get("trackingNumber");
-                savedOrder.setTransportTrackingNumber(trackingNumber);
+                savedOrder.setTransportTrackingNumber((String) transportBody.get("trackingNumber"));
                 savedOrder.setStatus("SHIPPING");
                 savedOrder = orderRepository.save(savedOrder);
-            } else {
-                throw new RuntimeException("Transport Service did not return tracking number");
             }
-
         } catch (Exception e) {
-            // Compensation: Refund Payment
-            try {
-                Map<String, Object> refundReq = new HashMap<>();
-                refundReq.put("transactionId", transactionId);
-                restTemplate.postForEntity(paymentUrl + "/refund", refundReq, Map.class);
-            } catch (Exception ex) {
-                // Queue for manual verification
-            }
-
-            // Compensation: Rollback Inventory
-            try {
-                restTemplate.put(marketplaceUrl + "/" + order.getListingId() + 
-                        "/status?status=AVAILABLE&quantity=" + oldQuantity, null);
-            } catch (Exception ex) {
-                // Queue for manual verification
-            }
-
+            // Compensations
+            Map<String, Object> refundReq = new HashMap<>();
+            refundReq.put("transactionId", transactionId);
+            restTemplate.postForEntity(paymentUrl + "/refund", refundReq, Map.class);
+            restTemplate.put(marketplaceUrl + "/" + savedOrder.getListingId() + "/status?status=AVAILABLE&quantity=" + oldQuantity, null);
             savedOrder.setStatus("CANCELLED");
-            orderRepository.save(savedOrder);
-            sendNotification(order.getBuyerId(), "Order failed: Logistics dispatch error. " + e.getMessage());
-            return savedOrder;
-        }
-
-        // --- Success Notification ---
-        sendNotification(savedOrder.getBuyerId(), "Order placed successfully! Tracking #: " + savedOrder.getTransportTrackingNumber());
-        if (farmerId != null) {
-            sendNotification(farmerId, "Your crop '" + cropName + "' has been purchased! Quantity: " + order.getQuantity() + "kg");
+            return orderRepository.save(savedOrder);
         }
 
         return savedOrder;
-    }
-
-    private void sendNotification(Long userId, String message) {
-        try {
-            Map<String, Object> notifyReq = new HashMap<>();
-            notifyReq.put("userId", userId);
-            notifyReq.put("message", message);
-            restTemplate.postForEntity(notificationUrl + "/send", notifyReq, Map.class);
-        } catch (Exception e) {
-            // Notifications are non-blocking; order is still valid even if notification fails
-        }
     }
 }

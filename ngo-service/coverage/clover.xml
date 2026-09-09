@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1782564978853" clover="3.2.0">
-  <project timestamp="1782564978853" name="All files">
+<coverage generated="1788921146389" clover="3.2.0">
+  <project timestamp="1788921146389" name="All files">
     <metrics statements="82" coveredstatements="65" conditionals="14" coveredconditionals="10" methods="13" coveredmethods="9" elements="109" coveredelements="84" complexity="0" loc="82" ncloc="82" packages="1" files="1" classes="1"/>
     <file name="server.js" path="D:\Project\ngo-service\server.js">
       <metrics statements="82" coveredstatements="65" conditionals="14" coveredconditionals="10" methods="13" coveredmethods="9"/>

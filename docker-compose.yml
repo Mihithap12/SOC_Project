@@ -196,6 +196,9 @@ services:
     container_name: frontend-farmer
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend-farmer:/app
+      - /app/node_modules
     depends_on:
       - user-service
       - marketplace-service

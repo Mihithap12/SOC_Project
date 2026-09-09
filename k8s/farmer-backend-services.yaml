@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: user-service:latest
+          image: project-user-service:latest
           ports:
             - containerPort: 8081
           env:
@@ -70,7 +70,7 @@ spec:
     spec:
       containers:
         - name: farmer-service
-          image: farmer-service:latest
+          image: project-farmer-service:latest
           ports:
             - containerPort: 8082
           env:
@@ -112,7 +112,7 @@ spec:
     spec:
       containers:
         - name: buyer-service
-          image: buyer-service:latest
+          image: project-buyer-service:latest
           ports:
             - containerPort: 8083
           env:
@@ -154,7 +154,7 @@ spec:
     spec:
       containers:
         - name: marketplace-service
-          image: marketplace-service:latest
+          image: project-marketplace-service:latest
           ports:
             - containerPort: 8084
           env:
@@ -196,7 +196,7 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: order-service:latest
+          image: project-order-service:latest
           ports:
             - containerPort: 8085
           env:
@@ -246,7 +246,7 @@ spec:
     spec:
       containers:
         - name: price-service
-          image: price-service:latest
+          image: project-price-service:latest
           ports:
             - containerPort: 8086
           env:
@@ -288,7 +288,7 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: payment-service:latest
+          image: project-payment-service:latest
           ports:
             - containerPort: 8087
           env:
@@ -330,7 +330,7 @@ spec:
     spec:
       containers:
         - name: transport-service
-          image: transport-service:latest
+          image: project-transport-service:latest
           ports:
             - containerPort: 8088
           env:
@@ -372,7 +372,7 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: notification-service:latest
+          image: project-notification-service:latest
           ports:
             - containerPort: 8089
           env:
@@ -414,7 +414,7 @@ spec:
     spec:
       containers:
         - name: weather-service
-          image: weather-service:latest
+          image: project-weather-service:latest
           ports:
             - containerPort: 8090
           env:

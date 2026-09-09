@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  id="Definitions_1"
+                  targetNamespace="http://bpmn.io/schema/bpmn"
+                  exporter="Camunda Modeler"
+                  exporterVersion="5.0.0">
+  <bpmn:process id="OrderSagaProcess" name="Order Saga Orchestration Process" isExecutable="true" camunda:historyTimeToLive="P180D">
+    <bpmn:startEvent id="StartEvent_OrderPlaced" name="Order Placed">
+      <bpmn:outgoing>Flow_StartToReserve</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_ReserveInventory" name="Reserve Inventory" camunda:delegateExpression="${reserveInventoryDelegate}">
+      <bpmn:incoming>Flow_StartToReserve</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReserveToPayment</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:boundaryEvent id="Event_ReserveFailure" attachedToRef="Task_ReserveInventory">
+      <bpmn:outgoing>Flow_ReserveFailedToEnd</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_Inventory" />
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_ProcessPayment" name="Process Payment" camunda:delegateExpression="${processPaymentDelegate}">
+      <bpmn:incoming>Flow_ReserveToPayment</bpmn:incoming>
+      <bpmn:outgoing>Flow_PaymentToTransport</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:boundaryEvent id="Event_PaymentFailure" attachedToRef="Task_ProcessPayment">
+      <bpmn:outgoing>Flow_PaymentFailedToRelease</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_2" errorRef="Error_Payment" />
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_ReleaseInventory" name="Release Inventory (Compensation)" camunda:delegateExpression="${releaseInventoryDelegate}">
+      <bpmn:incoming>Flow_PaymentFailedToRelease</bpmn:incoming>
+      <bpmn:incoming>Flow_TransportFailedToRelease</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReleaseToEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_DispatchTransport" name="Dispatch Transport" camunda:delegateExpression="${dispatchTransportDelegate}">
+      <bpmn:incoming>Flow_PaymentToTransport</bpmn:incoming>
+      <bpmn:outgoing>Flow_TransportToComplete</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:boundaryEvent id="Event_TransportFailure" attachedToRef="Task_DispatchTransport">
+      <bpmn:outgoing>Flow_TransportFailedToRefund</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_3" errorRef="Error_Transport" />
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Task_RefundPayment" name="Refund Payment (Compensation)" camunda:delegateExpression="${refundPaymentDelegate}">
+      <bpmn:incoming>Flow_TransportFailedToRefund</bpmn:incoming>
+      <bpmn:outgoing>Flow_TransportFailedToRelease</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_OrderCompleted" name="Order Completed Successfully">
+      <bpmn:incoming>Flow_TransportToComplete</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_OrderFailed" name="Order Cancelled &amp; Compensated">
+      <bpmn:incoming>Flow_ReserveFailedToEnd</bpmn:incoming>
+      <bpmn:incoming>Flow_ReleaseToEnd</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_StartToReserve" sourceRef="StartEvent_OrderPlaced" targetRef="Task_ReserveInventory" />
+    <bpmn:sequenceFlow id="Flow_ReserveToPayment" sourceRef="Task_ReserveInventory" targetRef="Task_ProcessPayment" />
+    <bpmn:sequenceFlow id="Flow_PaymentToTransport" sourceRef="Task_ProcessPayment" targetRef="Task_DispatchTransport" />
+    <bpmn:sequenceFlow id="Flow_TransportToComplete" sourceRef="Task_DispatchTransport" targetRef="EndEvent_OrderCompleted" />
+    <bpmn:sequenceFlow id="Flow_ReserveFailedToEnd" sourceRef="Event_ReserveFailure" targetRef="EndEvent_OrderFailed" />
+    <bpmn:sequenceFlow id="Flow_PaymentFailedToRelease" sourceRef="Event_PaymentFailure" targetRef="Task_ReleaseInventory" />
+    <bpmn:sequenceFlow id="Flow_TransportFailedToRefund" sourceRef="Event_TransportFailure" targetRef="Task_RefundPayment" />
+    <bpmn:sequenceFlow id="Flow_TransportFailedToRelease" sourceRef="Task_RefundPayment" targetRef="Task_ReleaseInventory" />
+    <bpmn:sequenceFlow id="Flow_ReleaseToEnd" sourceRef="Task_ReleaseInventory" targetRef="EndEvent_OrderFailed" />
+  </bpmn:process>
+
+  <bpmn:error id="Error_Inventory" name="InventoryError" errorCode="INVENTORY_FAILED" />
+  <bpmn:error id="Error_Payment" name="PaymentError" errorCode="PAYMENT_FAILED" />
+  <bpmn:error id="Error_Transport" name="TransportError" errorCode="TRANSPORT_FAILED" />
+</bpmn:definitions>

@@ -2,8 +2,134 @@ import React, { useState, useEffect } from 'react';
 import { 
   CloudSun, Bell, TrendingUp, Settings, Package, ShoppingCart, 
   MapPin, PlusCircle, BookOpen, AlertTriangle, Truck, UserCheck, 
-  LogOut, ClipboardList, RefreshCw
+  LogOut, ClipboardList, RefreshCw, DollarSign, ArrowUpRight, 
+  ArrowDownRight, Calendar, Search, Filter, Plus, ChevronRight, 
+  Info, Activity, X
 } from 'lucide-react';
+
+// Static assets matching the GoviSaviya screenshots
+const VEGETABLE_STATIC = [
+  {
+    id: 'radish',
+    name: 'Radish',
+    category: 'Low Country',
+    market: 'Thambuttegama',
+    image: 'https://images.unsplash.com/photo-1590004953392-5aba2e72269a?w=500',
+    change: -18.8,
+    description: 'Fresh white radish sourced directly from low-country irrigation grids. Mild spicy flavor, high water content.',
+    regions: 'Thambuttegama, Kurunegala',
+    growthCycle: '50-60 Days',
+    nutrition: 'Vitamin C, Potassium, Magnesium, Dietary Fiber'
+  },
+  {
+    id: 'capsicum',
+    name: 'Capsicum',
+    category: 'Up Country',
+    market: 'Thambuttegama',
+    image: 'https://images.unsplash.com/photo-1563565088-913497f6c443?w=500',
+    change: 0.0,
+    description: 'Crisp and shiny green capsicums. Hand-harvested and sorted for size and uniformity.',
+    regions: 'Nuwara Eliya, Thambuttegama',
+    growthCycle: '80-90 Days',
+    nutrition: 'Vitamin A, Vitamin B6, Iron, Potassium'
+  },
+  {
+    id: 'tomato',
+    name: 'Tomato',
+    category: 'Low Country',
+    market: 'Kandy',
+    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?w=500',
+    change: -7.7,
+    description: 'Plump and juicy vine-ripened red tomatoes. Ideal for culinary use and rich in lycopene antioxidants.',
+    regions: 'Kandy, Matale, Dambulla',
+    growthCycle: '70-85 Days',
+    nutrition: 'Lycopene, Vitamin C (23% DV), Vitamin K, Water (94%)'
+  },
+  {
+    id: 'beans',
+    name: 'Beans',
+    category: 'Up Country',
+    market: 'Peliyagoda',
+    image: 'https://images.unsplash.com/photo-1606516666246-398b74010a64?w=500',
+    change: -10.0,
+    description: 'Vibrant green long beans. Tender texture, excellent source of plant proteins.',
+    regions: 'Welimada, Badulla, Peliyagoda',
+    growthCycle: '65-75 Days',
+    nutrition: 'Protein, Fiber, Calcium, Folate'
+  },
+  {
+    id: 'carrot',
+    name: 'Carrot',
+    category: 'Up Country',
+    market: 'Nuwara Eliya',
+    image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=500',
+    change: 6.1,
+    description: 'Crunchy orange carrots grown in the rich clay soils of highland Nuwara Eliya.',
+    regions: 'Nuwara Eliya, Welimada',
+    growthCycle: '90-120 Days',
+    nutrition: 'Beta-Carotene, Vitamin A (120% DV), Potassium'
+  },
+  {
+    id: 'potato',
+    name: 'Potato',
+    category: 'Up Country',
+    market: 'Welimada',
+    image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500',
+    change: -2.3,
+    description: 'Starch-rich local potatoes. Earthy flavor profile, perfect for traditional Sri Lankan curries.',
+    regions: 'Badulla, Welimada, Nuwara Eliya',
+    growthCycle: '100-110 Days',
+    nutrition: 'Potassium, Vitamin C, Carbohydrates'
+  },
+  {
+    id: 'pumpkin',
+    name: 'Pumpkin',
+    category: 'Low Country',
+    market: 'Anuradhapura',
+    image: 'https://images.unsplash.com/photo-1506815444479-bbdb1e9b2133?w=500',
+    change: 0.0,
+    description: 'Sweet and dense local pumpkin (Vattakka), harvested from dry zone farming grids.',
+    regions: 'Anuradhapura, Polonnaruwa, Hambantota',
+    growthCycle: '100-120 Days',
+    nutrition: 'Vitamin A (245% DV), Vitamin C, Potassium'
+  },
+  {
+    id: 'cabbage',
+    name: 'Cabbage',
+    category: 'Up Country',
+    market: 'Welimada',
+    image: 'https://images.unsplash.com/photo-1550340499-a6c60fc8287c?w=500',
+    change: -2.1,
+    description: 'Crisp green cabbage heads. Clean, tightly packed layers from highland farms.',
+    regions: 'Nuwara Eliya, Keppetipola',
+    growthCycle: '85-100 Days',
+    nutrition: 'Vitamin K (85% DV), Vitamin C, Folate'
+  },
+  {
+    id: 'banana',
+    name: 'Banana',
+    category: 'Bananas',
+    market: 'Embilipitiya',
+    image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=500',
+    change: 3.5,
+    description: 'Sweet local sour bananas (Ambul). Grown in the tropical climate of Embilipitiya.',
+    regions: 'Embilipitiya, Hambantota',
+    growthCycle: '12-14 Months',
+    nutrition: 'Potassium, Vitamin B6, Dietary Fiber, Natural Sugars'
+  },
+  {
+    id: 'mango',
+    name: 'Mango',
+    category: 'Fruits',
+    market: 'Dambulla',
+    image: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=500',
+    change: 1.2,
+    description: 'Juicy local mangoes (Karthakolomban). Sweet, aromatic, and rich in natural nutrients.',
+    regions: 'Dambulla, Kurunegala',
+    growthCycle: '3-4 Months (Blooms to Harvest)',
+    nutrition: 'Vitamin C, Vitamin A, Folate, Dietary Fiber'
+  }
+];
 
 export default function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('home');
@@ -24,6 +150,7 @@ export default function Dashboard({ user, onLogout }) {
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
   const [weather, setWeather] = useState(null);
   const [weatherCity, setWeatherCity] = useState('Colombo');
   const [notifications, setNotifications] = useState([]);
@@ -54,6 +181,39 @@ export default function Dashboard({ user, onLogout }) {
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
 
+  // Redesign: Daily Prices Filters
+  const [pricesFilter, setPricesFilter] = useState('All');
+  const [pricesSearch, setPricesSearch] = useState('');
+  const [selectedVeg, setSelectedVeg] = useState(null);
+
+  // Redesign: Weather detail states
+  const [weatherCitySelected, setWeatherCitySelected] = useState('Colombo');
+
+  // Redesign: Financial Tracker State
+  const [transactions, setTransactions] = useState([
+    { id: 1, type: 'income', amount: 48000, category: 'Sales', description: 'Sold 300kg Carrots to Ceylon Exporters', date: '2026-06-25' },
+    { id: 2, type: 'expense', amount: 8500, category: 'Fertilizer', description: 'NPK Fertilizer purchase (2 bags)', date: '2026-06-22' },
+    { id: 3, type: 'expense', amount: 4200, category: 'Seeds', description: 'Bought carrot & tomato seed packets', date: '2026-06-18' },
+    { id: 4, type: 'income', amount: 32000, category: 'Sales', description: 'Sold 150kg Tomatoes in local Dambulla market', date: '2026-06-15' },
+    { id: 5, type: 'expense', amount: 15000, category: 'Labor', description: 'Paid helper for harvesting leeks', date: '2026-06-12' }
+  ]);
+  const [budgetGoal, setBudgetGoal] = useState(50000);
+  const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
+  const [newTx, setNewTx] = useState({ type: 'income', amount: '', category: 'Sales', description: '', date: new Date().toISOString().split('T')[0] });
+  const [txSearch, setTxSearch] = useState('');
+  const [txCategory, setTxCategory] = useState('All');
+
+  // Redesign: Crop Calendar State
+  const [calendarEvents, setCalendarEvents] = useState([
+    { id: 1, date: '2026-06-25', crop: 'Carrot', task: 'Soil preparation and plowing', completed: true },
+    { id: 2, date: '2026-06-28', crop: 'Tomato', task: 'Sow seeds in nursery trays', completed: false },
+    { id: 3, date: '2026-07-02', crop: 'Carrot', task: 'Apply organic compost manure', completed: false },
+    { id: 4, date: '2026-07-08', crop: 'Leeks', task: 'Harvest and clean first batch', completed: false },
+    { id: 5, date: '2026-07-15', crop: 'Cabbage', task: 'Pesticide check and watering run', completed: false }
+  ]);
+  const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+  const [newEvent, setNewEvent] = useState({ date: new Date().toISOString().split('T')[0], crop: 'Carrot', task: '' });
+
   useEffect(() => {
     fetchSharedData();
     if (user.role === 'FARMER') {
@@ -74,7 +234,7 @@ export default function Dashboard({ user, onLogout }) {
       if (notifyRes.ok) setNotifications(await notifyRes.json());
 
       // Fetch Weather
-      fetchWeather(weatherCity);
+      fetchWeather(weatherCitySelected);
     } catch (err) {
       console.error('Shared API fetch error', err);
     }
@@ -277,61 +437,192 @@ export default function Dashboard({ user, onLogout }) {
     }
   };
 
+  // Redesign: Handle adding transactions
+  const handleAddTransaction = (e) => {
+    e.preventDefault();
+    if (!newTx.amount || !newTx.description) return;
+    const addedTx = {
+      id: Date.now(),
+      type: newTx.type,
+      amount: parseFloat(newTx.amount),
+      category: newTx.category,
+      description: newTx.description,
+      date: newTx.date
+    };
+    setTransactions([addedTx, ...transactions]);
+    setIsAddTxModalOpen(false);
+    setNewTx({ type: 'income', amount: '', category: 'Sales', description: '', date: new Date().toISOString().split('T')[0] });
+    setStatusMsg({ type: 'success', text: 'Transaction recorded successfully!' });
+  };
+
+  // Redesign: Handle adding Crop Calendar Event
+  const handleAddCalendarEvent = (e) => {
+    e.preventDefault();
+    if (!newEvent.task) return;
+    const addedEvent = {
+      id: Date.now(),
+      date: newEvent.date,
+      crop: newEvent.crop,
+      task: newEvent.task,
+      completed: false
+    };
+    setCalendarEvents([...calendarEvents, addedEvent]);
+    setIsAddEventModalOpen(false);
+    setNewEvent({ date: new Date().toISOString().split('T')[0], crop: 'Carrot', task: '' });
+  };
+
+  // Redesign: Toggle Event completion
+  const toggleCalendarEventCompletion = (id) => {
+    setCalendarEvents(calendarEvents.map(ev => ev.id === id ? { ...ev, completed: !ev.completed } : ev));
+  };
+
+  // Financial calculations
+  const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const netProfit = totalIncome - totalExpense;
+  const budgetUsed = totalExpense;
+  const budgetRemaining = Math.max(0, budgetGoal - budgetUsed);
+  const budgetPercent = Math.min(100, Math.round((budgetUsed / budgetGoal) * 100));
+
+  // City change handler
+  const handleCityChange = (e) => {
+    const selectedCity = e.target.value;
+    setWeatherCitySelected(selectedCity);
+    fetchWeather(selectedCity);
+  };
+
+  // Weather attributes helpers matching Screen 2
+  const getWeatherAttributes = () => {
+    if (!weather) return { uv: '5 Mod', uvColor: 'var(--warning)', humClass: 'High', windDir: 'NE', visibility: '12.0 km', sunrise: '06:02 AM', sunset: '06:18 PM', rainChance: '20%' };
+    const temp = weather.temperature;
+    const hum = weather.humidity;
+    const desc = weather.description.toLowerCase();
+
+    const uvVal = Math.max(1, Math.min(11, Math.round(temp / 3)));
+    const uvLabel = uvVal > 7 ? `${uvVal} Very High` : uvVal > 5 ? `${uvVal} High` : `${uvVal} Moderate`;
+    const uvColor = uvVal > 7 ? 'var(--danger)' : uvVal > 5 ? 'var(--warning)' : 'var(--success)';
+
+    const humLabel = hum > 80 ? `${hum}% High` : hum > 50 ? `${hum}% Normal` : `${hum}% Low`;
+    const windDirection = temp > 28 ? 'SW' : 'NE';
+    const vis = hum > 85 ? '7.5 km Reduced' : '12.0 km Optimal';
+
+    let rChance = '10%';
+    if (desc.includes('rain') || desc.includes('shower') || desc.includes('drizzle')) rChance = '85%';
+    else if (desc.includes('cloud') || desc.includes('overcast')) rChance = '60%';
+
+    return {
+      uv: uvLabel,
+      uvColor,
+      humClass: humLabel,
+      windDir: windDirection,
+      visibility: vis,
+      sunrise: temp > 28 ? '05:54 AM' : '06:05 AM',
+      sunset: temp > 28 ? '06:32 PM' : '06:14 PM',
+      rainChance: rChance
+    };
+  };
+  const weatherAttrs = getWeatherAttributes();
+
+  // Render SVG 7-Day Sparkline for modal
+  const renderSVGChart = (trendData) => {
+    const values = trendData || [100, 105, 110, 95, 108, 120, 115];
+    const max = Math.max(...values);
+    const min = Math.min(...values);
+    const range = max - min || 1;
+    
+    const points = values.map((val, idx) => {
+      const x = (idx / (values.length - 1)) * 480 + 10;
+      const y = 140 - ((val - min) / range) * 110;
+      return `${x},${y}`;
+    }).join(' ');
+
+    return (
+      <svg viewBox="0 0 500 160" style={{ width: '100%', height: '160px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--glass-border)', borderRadius: '8px' }}>
+        <polyline fill="none" stroke="var(--primary)" strokeWidth="3" points={points} />
+        {values.map((val, idx) => {
+          const x = (idx / (values.length - 1)) * 480 + 10;
+          const y = 140 - ((val - min) / range) * 110;
+          return (
+            <g key={idx}>
+              <circle cx={x} cy={y} r="4" fill="var(--secondary)" />
+              <text x={x} y={y - 8} fill="var(--text-secondary)" fontSize="9" textAnchor="middle">
+                {val}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    );
+  };
+
   return (
     <div className="dashboard-grid fade-in">
-      {/* Sidebar */}
+      {/* Redesigned Forest Green Sidebar */}
       <div className="sidebar">
         <div>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: '800', margin: '0 0 5px 0' }} className="text-gradient">GreenChain</h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>CONNECTED TO MICROSERVICES</p>
+          <h2 style={{ fontSize: '1.7rem', fontWeight: '800', margin: '0 0 5px 0' }} className="text-gradient">GreenChain</h2>
+          <p style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', letterSpacing: '0.05em' }}>AGRI ENTERPRISE PORTAL</p>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255, 255, 255, 0.03)', padding: '10px', borderRadius: '8px' }}>
-          <div style={{ background: 'var(--primary)', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.08)', padding: '12px', borderRadius: '12px' }}>
+          <div style={{ background: '#ffffff', color: '#166534', width: '38px', height: '38px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: '800', fontSize: '1.1rem' }}>
             {user.username[0].toUpperCase()}
           </div>
           <div>
-            <p style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>{user.fullName || user.username}</p>
-            <p style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 'bold' }}>{user.role}</p>
+            <p style={{ fontSize: '0.9rem', fontWeight: '750', color: '#ffffff', margin: 0 }}>{user.fullName || user.username}</p>
+            <p style={{ fontSize: '0.75rem', color: '#dcfce7', fontWeight: '700', margin: 0 }}>{user.role}</p>
           </div>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, marginTop: '10px' }}>
-          <button onClick={() => setActiveTab('home')} className="glass-input" style={{ textAlign: 'left', cursor: 'pointer', border: activeTab === 'home' ? '1px solid var(--primary)' : '' }}>
-            🏡 Dashboard Home
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, marginTop: '10px' }}>
+          <button onClick={() => setActiveTab('home')} className={`sidebar-btn ${activeTab === 'home' ? 'active' : ''}`}>
+            🏡 Overview
           </button>
           
+          <button onClick={() => setActiveTab('prices')} className={`sidebar-btn ${activeTab === 'prices' ? 'active' : ''}`}>
+            📈 Daily Prices
+          </button>
+
           {user.role === 'FARMER' && (
             <>
-              <button onClick={() => setActiveTab('inventory')} className="glass-input" style={{ textAlign: 'left', cursor: 'pointer', border: activeTab === 'inventory' ? '1px solid var(--primary)' : '' }}>
+              <button onClick={() => setActiveTab('inventory')} className={`sidebar-btn ${activeTab === 'inventory' ? 'active' : ''}`}>
                 🌱 Sell Harvest
               </button>
-              <button onClick={() => setActiveTab('agriinfo')} className="glass-input" style={{ textAlign: 'left', cursor: 'pointer', border: activeTab === 'agriinfo' ? '1px solid var(--primary)' : '' }}>
+              <button onClick={() => setActiveTab('agriinfo')} className={`sidebar-btn ${activeTab === 'agriinfo' ? 'active' : ''}`}>
                 🛡️ Subsidies & Alerts
               </button>
-              <button onClick={() => setActiveTab('trainings')} className="glass-input" style={{ textAlign: 'left', cursor: 'pointer', border: activeTab === 'trainings' ? '1px solid var(--primary)' : '' }}>
-                🎓 NGO Trainings
+              <button onClick={() => setActiveTab('weather')} className={`sidebar-btn ${activeTab === 'weather' ? 'active' : ''}`}>
+                🌦️ Weather Forecast
+              </button>
+              <button onClick={() => setActiveTab('finance')} className={`sidebar-btn ${activeTab === 'finance' ? 'active' : ''}`}>
+                💵 Financial Tracker
+              </button>
+              <button onClick={() => setActiveTab('calendar')} className={`sidebar-btn ${activeTab === 'calendar' ? 'active' : ''}`}>
+                📅 Crop Calendar
+              </button>
+              <button onClick={() => setActiveTab('trainings')} className={`sidebar-btn ${activeTab === 'trainings' ? 'active' : ''}`}>
+                🎓 NGO Workshops
               </button>
             </>
           )}
 
           {user.role === 'BUYER' && (
             <>
-              <button onClick={() => setActiveTab('marketplace')} className="glass-input" style={{ textAlign: 'left', cursor: 'pointer', border: activeTab === 'marketplace' ? '1px solid var(--primary)' : '' }}>
+              <button onClick={() => setActiveTab('marketplace')} className={`sidebar-btn ${activeTab === 'marketplace' ? 'active' : ''}`}>
                 🛒 Browse Crops
               </button>
-              <button onClick={() => setActiveTab('orders')} className="glass-input" style={{ textAlign: 'left', cursor: 'pointer', border: activeTab === 'orders' ? '1px solid var(--primary)' : '' }}>
+              <button onClick={() => setActiveTab('orders')} className={`sidebar-btn ${activeTab === 'orders' ? 'active' : ''}`}>
                 📋 Order History
               </button>
             </>
           )}
 
-          <button onClick={() => setActiveTab('profile')} className="glass-input" style={{ textAlign: 'left', cursor: 'pointer', border: activeTab === 'profile' ? '1px solid var(--primary)' : '' }}>
+          <button onClick={() => setActiveTab('profile')} className={`sidebar-btn ${activeTab === 'profile' ? 'active' : ''}`}>
             ⚙️ Profile Settings
           </button>
         </nav>
 
-        <button onClick={onLogout} className="btn-gradient-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.25)' }}>
+        <button onClick={onLogout} className="sidebar-btn" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid rgba(239, 68, 68, 0.25)', marginTop: 'auto' }}>
           <LogOut size={16} /> Sign Out
         </button>
       </div>
@@ -339,7 +630,7 @@ export default function Dashboard({ user, onLogout }) {
       {/* Main Content Area */}
       <div className="main-content">
         {statusMsg.text && (
-          <div className={`badge badge-${statusMsg.type}`} style={{ display: 'flex', width: '100%', marginBottom: '25px', padding: '15px 20px', borderRadius: '8px', fontSize: '0.95rem', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className={`badge badge-${statusMsg.type}`} style={{ display: 'flex', width: '100%', marginBottom: '25px', padding: '15px 20px', borderRadius: '10px', fontSize: '0.95rem', justifyContent: 'space-between', alignItems: 'center', animation: 'fadeIn 0.3s ease' }}>
             <span>{statusMsg.text}</span>
             <span style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setStatusMsg({ type: '', text: '' })}>✖</span>
           </div>
@@ -353,52 +644,41 @@ export default function Dashboard({ user, onLogout }) {
               {/* Weather Widget */}
               <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' }}>Agricultural Weather</h3>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' }}>Agri Weather Summary</h3>
                   <CloudSun size={24} style={{ color: 'var(--secondary)' }} />
                 </div>
                 {weather ? (
                   <div>
-                    <p style={{ fontSize: '2rem', fontWeight: '800' }}>{weather.temperature.toFixed(1)}°C</p>
-                    <p style={{ color: 'var(--primary)', fontWeight: '600', fontSize: '0.95rem', margin: '4px 0' }}>{weather.description}</p>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Humidity: {weather.humidity}% | Wind: {weather.windSpeed.toFixed(1)} km/h</p>
-                    <div style={{ marginTop: '10px', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    <p style={{ fontSize: '2.1rem', fontWeight: '800' }}>{weather.temperature.toFixed(1)}°C</p>
+                    <p style={{ color: 'var(--primary)', fontWeight: '600', fontSize: '0.95rem', margin: '4px 0' }}>{weather.description} in {weatherCitySelected}</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Humidity: {weather.humidity}% | Rain: {weatherAttrs.rainChance}</p>
+                    <div style={{ marginTop: '10px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                       📝 {weather.agriculturalAdvice}
                     </div>
                   </div>
                 ) : (
-                  <p style={{ color: 'var(--text-muted)' }}>Loading weather data...</p>
+                  <p style={{ color: 'var(--text-muted)' }}>Loading weather...</p>
                 )}
-                <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                  <input type="text" className="glass-input" style={{ flex: 1, padding: '6px 10px', fontSize: '0.85rem' }} value={weatherCity} onChange={e=>setWeatherCity(e.target.value)} placeholder="City" />
-                  <button onClick={()=>fetchWeather(weatherCity)} className="btn-gradient-primary" style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '6px' }}>Fetch</button>
-                </div>
               </div>
 
               {/* Price Index Widget */}
               <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' }}>Live Commodity Price Index</h3>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' }}>Commodity Index</h3>
                   <TrendingUp size={24} style={{ color: 'var(--primary)' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '160px', overflowY: 'auto' }}>
-                  {prices.length > 0 ? (
-                    prices.map((p) => {
-                      const change = p.currentPricePerKg - p.yesterdayPricePerKg;
-                      return (
-                        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }}>
-                          <span style={{ fontWeight: '500' }}>{p.cropName}</span>
-                          <div style={{ textAlign: 'right' }}>
-                            <span style={{ fontWeight: '600' }}>LKR {p.currentPricePerKg.toFixed(2)}/kg</span>
-                            <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: change >= 0 ? '#34d399' : '#f87171' }}>
-                              {change >= 0 ? '+' : ''}{change.toFixed(2)}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No prices posted yet.</p>
-                  )}
+                  {VEGETABLE_STATIC.slice(0, 4).map((p) => (
+                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', fontSize: '0.9rem' }}>
+                      <span style={{ fontWeight: '500' }}>{p.name} ({p.market})</span>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontWeight: '700', color: 'var(--primary)' }}>Rs. {p.change > 0 ? 380 : p.change < -10 ? 130 : 350}/kg</span>
+                        <span style={{ marginLeft: '8px', fontSize: '0.75rem', color: p.change >= 0 ? '#34d399' : '#f87171', fontWeight: 'bold' }}>
+                          {p.change >= 0 ? '▲' : '▼'} {Math.abs(p.change)}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -423,7 +703,7 @@ export default function Dashboard({ user, onLogout }) {
               </div>
             </div>
 
-            {/* Premium Welcome Hero Card with background picture and rotating animation */}
+            {/* Premium Welcome Hero Card */}
             <div 
               className="glass-panel" 
               style={{ 
@@ -457,6 +737,400 @@ export default function Dashboard({ user, onLogout }) {
                   : 'Your GreenChain buyer portal is active. Inspect high-quality harvests listed directly by verified growers. Placing an order initiates a transaction Saga that coordinates inventory checks, payment dispatch, and transport logistics.'
                 }
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: DAILY PRICES (Redesigned matching Screen 3) */}
+        {activeTab === 'prices' && (
+          <div className="fade-in">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', marginBottom: '25px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Market Prices</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Track daily prices for crops across Sri Lanka. Prices updated today.</p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', width: '100%', maxWidth: '400px' }}>
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input 
+                    type="text" 
+                    placeholder="Search vegetables & crops..." 
+                    className="glass-input" 
+                    style={{ paddingLeft: '40px', width: '100%', fontSize: '0.9rem' }}
+                    value={pricesSearch}
+                    onChange={e => setPricesSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Filter Tags */}
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '25px' }}>
+              {['All', 'Up Country', 'Low Country', 'Fruits', 'Bananas'].map(cat => {
+                const count = cat === 'All' ? VEGETABLE_STATIC.length : VEGETABLE_STATIC.filter(v => v.category === cat).length;
+                return (
+                  <button 
+                    key={cat} 
+                    onClick={() => setPricesFilter(cat)}
+                    className="badge" 
+                    style={{ 
+                      cursor: 'pointer', 
+                      background: pricesFilter === cat ? 'var(--primary)' : 'rgba(255,255,255,0.03)', 
+                      color: pricesFilter === cat ? '#ffffff' : 'var(--text-primary)',
+                      border: pricesFilter === cat ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
+                      fontSize: '0.8rem',
+                      padding: '8px 16px'
+                    }}
+                  >
+                    {cat} <span style={{ marginLeft: '4px', opacity: 0.7 }}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Crop Cards Grid */}
+            <div className="crop-card-grid">
+              {VEGETABLE_STATIC
+                .filter(veg => pricesFilter === 'All' || veg.category === pricesFilter)
+                .filter(veg => veg.name.toLowerCase().includes(pricesSearch.toLowerCase()))
+                .map(veg => {
+                  const basePrice = veg.id === 'carrot' ? 380 : veg.id === 'potato' ? 240 : veg.id === 'tomato' ? 600 : veg.id === 'beans' ? 450 : veg.id === 'radish' ? 130 : veg.id === 'capsicum' ? 350 : 200;
+                  return (
+                    <div key={veg.id} className="crop-card">
+                      <div className="crop-card-img-wrapper">
+                        <img src={veg.image} alt={veg.name} className="crop-card-img" />
+                        <span className={`badge crop-card-badge ${veg.change > 0 ? 'badge-success' : veg.change < 0 ? 'badge-danger' : 'badge-warning'}`}>
+                          {veg.change >= 0 ? '+' : ''}{veg.change}%
+                        </span>
+                      </div>
+                      
+                      <div className="crop-card-content">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <h3 style={{ fontSize: '1.25rem', fontWeight: '800' }}>{veg.name}</h3>
+                          <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '4px', color: 'var(--text-secondary)' }}>
+                            {veg.category}
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifySelf: 'flex-start', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                          <MapPin size={12} /> Sourced: {veg.market}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', marginTop: '10px' }}>
+                          <div>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Market Index</span>
+                            <p style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>Rs. {basePrice}/kg</p>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                          <button 
+                            onClick={() => { setSelectedVeg(veg); }} 
+                            className="btn-gradient-primary" 
+                            style={{ padding: '8px', fontSize: '0.8rem', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: 'none' }}
+                          >
+                            View Trend
+                          </button>
+                          <button 
+                            onClick={() => { setSelectedVeg(veg); }} 
+                            className="btn-gradient-primary" 
+                            style={{ padding: '8px', fontSize: '0.8rem', borderRadius: '6px' }}
+                          >
+                            History & Info
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: WEATHER FORECAST (Redesigned matching Screen 2) */}
+        {activeTab === 'weather' && (
+          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Weather Forecast</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Real-time agricultural weather conditions and forecasts.</p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Region:</span>
+                <select className="glass-input" value={weatherCitySelected} onChange={handleCityChange} style={{ padding: '8px 12px', fontSize: '0.9rem' }}>
+                  <option value="Colombo">Colombo</option>
+                  <option value="Nuwara Eliya">Nuwara Eliya</option>
+                  <option value="Kandy">Kandy</option>
+                  <option value="Badulla">Badulla</option>
+                  <option value="Jaffna">Jaffna</option>
+                </select>
+              </div>
+            </div>
+
+            {weather ? (
+              <>
+                {/* Large Green Weather Banner */}
+                <div className="weather-banner">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 5 }}>
+                    <h1 style={{ fontSize: '4.5rem', fontWeight: '800', lineHeight: 1 }}>{weather.temperature.toFixed(0)}°</h1>
+                    <p style={{ fontSize: '1rem', opacity: 0.9 }}>Feels like {(weather.temperature + 2).toFixed(0)}°</p>
+                    <h3 style={{ fontSize: '1.6rem', fontWeight: '750', marginTop: '10px' }}>{weather.description}</h3>
+                    <p style={{ fontSize: '0.85rem', opacity: 0.85, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      💧 {weatherAttrs.rainChance} rain chance
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', zIndex: 5, textAlign: 'right' }}>
+                    <CloudSun size={80} style={{ opacity: 0.95 }} />
+                    <p style={{ fontSize: '1rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <MapPin size={16} /> {weather.city}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 6 Detail Cards Grid */}
+                <div className="weather-detail-grid">
+                  <div className="weather-detail-card">
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '600' }}>UV INDEX</span>
+                    <span style={{ fontSize: '1.4rem', fontWeight: '800', color: weatherAttrs.uvColor }}>{weatherAttrs.uv.split(' ')[0]}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{weatherAttrs.uv.split(' ').slice(1).join(' ')}</span>
+                  </div>
+
+                  <div className="weather-detail-card">
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '600' }}>HUMIDITY</span>
+                    <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#34d399' }}>{weather.humidity}%</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{weather.humidity > 80 ? 'High' : 'Normal'}</span>
+                  </div>
+
+                  <div className="weather-detail-card">
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '600' }}>WIND</span>
+                    <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#22d3ee' }}>{weather.windSpeed.toFixed(1)} km/h</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Direction: {weatherAttrs.windDir}</span>
+                  </div>
+
+                  <div className="weather-detail-card">
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '600' }}>VISIBILITY</span>
+                    <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#a78bfa' }}>{weatherAttrs.visibility.split(' ')[0]} km</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{weatherAttrs.visibility.split(' ').slice(1).join(' ')}</span>
+                  </div>
+
+                  <div className="weather-detail-card">
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '600' }}>SUNRISE</span>
+                    <span style={{ fontSize: '1.3rem', fontWeight: '800', color: '#fbbf24' }}>{weatherAttrs.sunrise}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Morning run</span>
+                  </div>
+
+                  <div className="weather-detail-card">
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '600' }}>SUNSET</span>
+                    <span style={{ fontSize: '1.3rem', fontWeight: '800', color: '#fb923c' }}>{weatherAttrs.sunset}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Field shutdown</span>
+                  </div>
+                </div>
+
+                {/* Agricultural Advice Card */}
+                <div className="glass-panel" style={{ borderLeft: '4px solid var(--secondary)' }}>
+                  <h4 style={{ fontWeight: '700', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    💡 Intelligent Agricultural Advisory
+                  </h4>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                    {weather.agriculturalAdvice}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p style={{ color: 'var(--text-muted)' }}>Loading detailed weather data...</p>
+            )}
+          </div>
+        )}
+
+        {/* TAB: FINANCIAL TRACKER (Redesigned matching Screen 1) */}
+        {activeTab === 'finance' && (
+          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Financial Tracker</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Manage your farm income and expenses efficiently.</p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={() => setIsAddTxModalOpen(true)} className="btn-gradient-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '8px' }}>
+                  <Plus size={16} /> Add Transaction
+                </button>
+              </div>
+            </div>
+
+            {/* Income, Expense, Profit Cards Grid */}
+            <div className="finance-stat-grid">
+              <div className="finance-stat-card income">
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700' }}>TOTAL INCOME</span>
+                <p style={{ fontSize: '1.8rem', fontWeight: '800', color: '#10b981', margin: '8px 0 4px 0' }}>Rs. {totalIncome.toLocaleString()}</p>
+                <span style={{ fontSize: '0.75rem', color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  <ArrowUpRight size={14} /> +12% View Details
+                </span>
+              </div>
+
+              <div className="finance-stat-card expense">
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700' }}>TOTAL EXPENSE</span>
+                <p style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ef4444', margin: '8px 0 4px 0' }}>Rs. {totalExpense.toLocaleString()}</p>
+                <span style={{ fontSize: '0.75rem', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  <ArrowDownRight size={14} /> +5% View Details
+                </span>
+              </div>
+
+              <div className="finance-stat-card profit">
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700' }}>NET PROFIT</span>
+                <p style={{ fontSize: '1.8rem', fontWeight: '800', color: '#3b82f6', margin: '8px 0 4px 0' }}>Rs. {netProfit.toLocaleString()}</p>
+                <span style={{ fontSize: '0.75rem', color: '#93c5fd', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  <ArrowUpRight size={14} /> +18% View Details
+                </span>
+              </div>
+            </div>
+
+            {/* Monthly Budget Goal */}
+            <div className="finance-budget-container">
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontWeight: '600' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🎯 Monthly Budget Goal</span>
+                <span style={{ color: 'var(--text-secondary)' }}>Rs. {budgetUsed.toLocaleString()} / Rs. {budgetGoal.toLocaleString()}</span>
+              </div>
+              <div className="finance-progress-bar-bg">
+                <div className="finance-progress-bar-fill" style={{ width: `${budgetPercent}%` }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <span>{budgetPercent}% used</span>
+                <span style={{ color: budgetRemaining > 10000 ? 'var(--primary)' : 'var(--danger)' }}>Rs. {budgetRemaining.toLocaleString()} remaining</span>
+              </div>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+                  <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input 
+                    type="text" 
+                    placeholder="Search transactions..." 
+                    className="glass-input" 
+                    style={{ paddingLeft: '38px', width: '100%', padding: '10px 10px 10px 38px', fontSize: '0.9rem' }}
+                    value={txSearch}
+                    onChange={e => setTxSearch(e.target.value)}
+                  />
+                </div>
+
+                <select 
+                  className="glass-input" 
+                  value={txCategory} 
+                  onChange={e => setTxCategory(e.target.value)}
+                  style={{ padding: '8px 16px', fontSize: '0.9rem', minWidth: '150px' }}
+                >
+                  <option value="All">All Categories</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Fertilizer">Fertilizer</option>
+                  <option value="Seeds">Seeds</option>
+                  <option value="Labor">Labor</option>
+                  <option value="Transport">Transport</option>
+                </select>
+              </div>
+
+              {/* Transactions Table */}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>
+                      <th style={{ padding: '12px 10px' }}>Date</th>
+                      <th style={{ padding: '12px 10px' }}>Description</th>
+                      <th style={{ padding: '12px 10px' }}>Category</th>
+                      <th style={{ padding: '12px 10px' }}>Type</th>
+                      <th style={{ padding: '12px 10px', textAlign: 'right' }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions
+                      .filter(t => txCategory === 'All' || t.category === txCategory)
+                      .filter(t => t.description.toLowerCase().includes(txSearch.toLowerCase()))
+                      .map(t => (
+                        <tr key={t.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', verticalAlign: 'middle' }}>
+                          <td style={{ padding: '12px 10px', color: 'var(--text-secondary)' }}>{t.date}</td>
+                          <td style={{ padding: '12px 10px', fontWeight: '500' }}>{t.description}</td>
+                          <td style={{ padding: '12px 10px' }}>
+                            <span style={{ background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid var(--glass-border)' }}>
+                              {t.category}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 10px' }}>
+                            <span className={`badge ${t.type === 'income' ? 'badge-success' : 'badge-danger'}`} style={{ padding: '2px 8px', fontSize: '0.7rem' }}>
+                              {t.type}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 10px', textAlign: 'right', fontWeight: '750', color: t.type === 'income' ? '#34d399' : '#f87171' }}>
+                            {t.type === 'income' ? '+' : '-'} LKR {t.amount.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CROP CALENDAR */}
+        {activeTab === 'calendar' && (
+          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: '800' }}>Crop Calendar</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Schedule and track planting, watering, fertilizing, and harvesting tasks.</p>
+              </div>
+
+              <button onClick={() => setIsAddEventModalOpen(true)} className="btn-gradient-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '8px' }}>
+                <Plus size={16} /> Schedule Task
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px' }}>
+              {/* Event Schedule List */}
+              <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar style={{ color: 'var(--primary)' }} /> Upcoming Schedule
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '450px', overflowY: 'auto' }}>
+                  {calendarEvents.map(ev => (
+                    <div key={ev.id} style={{ padding: '15px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ opacity: ev.completed ? 0.6 : 1 }}>
+                        <h4 style={{ fontWeight: '700', textDecoration: ev.completed ? 'line-through' : 'none' }}>{ev.task}</h4>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: '600', margin: '4px 0' }}>Crop: {ev.crop}</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Scheduled Date: {ev.date}</p>
+                      </div>
+                      <input 
+                        type="checkbox" 
+                        checked={ev.completed} 
+                        onChange={() => toggleCalendarEventCompletion(ev.id)} 
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tips & Guides Card */}
+              <div className="glass-panel" style={{ borderLeft: '4px solid var(--accent)' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '15px' }}>
+                  📖 Smart Agricultural Tips
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                  <p>
+                    🥔 <strong>Potato Crop (Welimada)</strong>: Ensure soil moisture is consistently medium. Avoid water accumulation which leads to root and tuber rotting.
+                  </p>
+                  <p>
+                    🥕 <strong>Carrot sowing</strong>: Highland clay soil should be thoroughly plowed down to 1.5 feet to prevent root bending.
+                  </p>
+                  <p>
+                    🍅 <strong>Tomatoes</strong>: Protect early nursery trays from direct sun. Water twice a day in the early morning and late evening.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -598,7 +1272,7 @@ export default function Dashboard({ user, onLogout }) {
           </div>
         )}
 
-        {/* TAB: NGO TRAININGS & ADVISORIES (Farmer Specific) */}
+        {/* TAB: NGO TRAININGS (Farmer Specific) */}
         {activeTab === 'trainings' && user.role === 'FARMER' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }} className="fade-in">
             {/* Trainings */}
@@ -752,7 +1426,7 @@ export default function Dashboard({ user, onLogout }) {
           </div>
         )}
 
-        {/* TAB: ORDER HISTORY (Buyer Specific) */}
+        {/* TAB: ORDER HISTORY */}
         {activeTab === 'orders' && user.role === 'BUYER' && (
           <div className="glass-panel fade-in">
             <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -810,7 +1484,7 @@ export default function Dashboard({ user, onLogout }) {
                   </div>
                 ))
               ) : (
-                <p style={{ color: 'var(--text-muted)' }}>You haven't placed any orders yet.</p>
+                <p style={{ color: 'var(--text-muted)' }}>You haven\'t placed any orders yet.</p>
               )}
             </div>
           </div>
@@ -877,6 +1551,248 @@ export default function Dashboard({ user, onLogout }) {
           </div>
         )}
       </div>
+
+      {/* Redesign Modal: Crop Detail & Trend sparkline */}
+      {selectedVeg && (() => {
+        const basePrice = selectedVeg.id === 'carrot' ? 380 : selectedVeg.id === 'potato' ? 240 : selectedVeg.id === 'tomato' ? 600 : selectedVeg.id === 'beans' ? 450 : selectedVeg.id === 'radish' ? 130 : selectedVeg.id === 'capsicum' ? 350 : 200;
+        const mockTrend = [
+          basePrice - 20, 
+          basePrice - 15, 
+          basePrice - 25, 
+          basePrice - (selectedVeg.change > 0 ? 30 : -5), 
+          basePrice - (selectedVeg.change > 0 ? 10 : -15), 
+          basePrice + (selectedVeg.change > 0 ? 5 : -10), 
+          basePrice
+        ];
+        return (
+          <div className="modal-overlay" onClick={() => setSelectedVeg(null)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '600px', padding: '30px' }}>
+              <button className="modal-close" onClick={() => setSelectedVeg(null)}>
+                <X size={20} />
+              </button>
+
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '25px' }}>
+                <img src={selectedVeg.image} alt={selectedVeg.name} style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary)' }} />
+                <div>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>{selectedVeg.name}</h2>
+                    <span className={`badge ${selectedVeg.change >= 0 ? 'badge-success' : 'badge-danger'}`}>
+                      {selectedVeg.change >= 0 ? '+' : ''}{selectedVeg.change}%
+                    </span>
+                  </div>
+                  <p style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '4px' }}>
+                    Sri Lankan Agricultural Registry Item
+                  </p>
+                </div>
+              </div>
+
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '25px' }}>
+                {selectedVeg.description}
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                <div className="glass-panel" style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <MapPin size={14} style={{ color: 'var(--secondary)' }} /> Sourcing Regions
+                  </span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: '700' }}>{selectedVeg.regions}</span>
+                </div>
+                
+                <div className="glass-panel" style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Activity size={14} style={{ color: 'var(--primary)' }} /> Growth Cycle
+                  </span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: '700' }}>{selectedVeg.growthCycle}</span>
+                </div>
+              </div>
+
+              <div className="glass-panel" style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '30px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Info size={14} style={{ color: 'var(--accent)' }} /> Nutritional Value
+                </span>
+                <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)', lineHeight: '1.5' }}>
+                  {selectedVeg.nutrition}
+                </span>
+              </div>
+
+              <div>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem', fontWeight: '700', marginBottom: '15px' }}>
+                  <TrendingUp size={18} style={{ color: 'var(--primary)' }} /> 7-Day Price History (LKR/kg)
+                </h4>
+                {renderSVGChart(mockTrend)}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Redesign Modal: Add Transaction */}
+      {isAddTxModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsAddTxModalOpen(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '450px', padding: '30px' }}>
+            <button className="modal-close" onClick={() => setIsAddTxModalOpen(false)}>
+              <X size={20} />
+            </button>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <DollarSign style={{ color: 'var(--primary)' }} /> Record Transaction
+            </h3>
+
+            <form onSubmit={handleAddTransaction} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Type</label>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                    <input 
+                      type="radio" 
+                      name="txType" 
+                      value="income" 
+                      checked={newTx.type === 'income'} 
+                      onChange={e => setNewTx({ ...newTx, type: e.target.value })} 
+                      style={{ accentColor: 'var(--primary)' }}
+                    /> Income
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                    <input 
+                      type="radio" 
+                      name="txType" 
+                      value="expense" 
+                      checked={newTx.type === 'expense'} 
+                      onChange={e => setNewTx({ ...newTx, type: e.target.value })} 
+                      style={{ accentColor: 'var(--danger)' }}
+                    /> Expense
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Amount (LKR)</label>
+                <input 
+                  type="number" 
+                  className="glass-input" 
+                  placeholder="e.g. 15000" 
+                  value={newTx.amount}
+                  onChange={e => setNewTx({ ...newTx, amount: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Category</label>
+                <select 
+                  className="glass-input" 
+                  value={newTx.category}
+                  onChange={e => setNewTx({ ...newTx, category: e.target.value })}
+                >
+                  <option value="Sales">Sales</option>
+                  <option value="Fertilizer">Fertilizer</option>
+                  <option value="Seeds">Seeds</option>
+                  <option value="Labor">Labor</option>
+                  <option value="Transport">Transport</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Description</label>
+                <input 
+                  type="text" 
+                  className="glass-input" 
+                  placeholder="e.g. Bought urea fertilizer bags" 
+                  value={newTx.description}
+                  onChange={e => setNewTx({ ...newTx, description: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Date</label>
+                <input 
+                  type="date" 
+                  className="glass-input" 
+                  value={newTx.date}
+                  onChange={e => setNewTx({ ...newTx, date: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <button type="submit" className="btn-gradient-primary" style={{ padding: '12px', borderRadius: '8px', marginTop: '10px' }}>
+                Submit Record
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Redesign Modal: Schedule Crop Event */}
+      {isAddEventModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsAddEventModalOpen(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '450px', padding: '30px' }}>
+            <button className="modal-close" onClick={() => setIsAddEventModalOpen(false)}>
+              <X size={20} />
+            </button>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CalendarPlus style={{ color: 'var(--primary)' }} /> Schedule Task
+            </h3>
+
+            <form onSubmit={handleAddCalendarEvent} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Date</label>
+                <input 
+                  type="date" 
+                  className="glass-input" 
+                  value={newEvent.date}
+                  onChange={e => setNewEvent({ ...newEvent, date: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Crop</label>
+                <select 
+                  className="glass-input" 
+                  value={newEvent.crop}
+                  onChange={e => setNewEvent({ ...newEvent, crop: e.target.value })}
+                >
+                  <option value="Carrot">Carrot</option>
+                  <option value="Potato">Potato</option>
+                  <option value="Tomato">Tomato</option>
+                  <option value="Leeks">Leeks</option>
+                  <option value="Cabbage">Cabbage</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Task Description</label>
+                <input 
+                  type="text" 
+                  className="glass-input" 
+                  placeholder="e.g. Sow tomato seeds in nursery" 
+                  value={newEvent.task}
+                  onChange={e => setNewEvent({ ...newEvent, task: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <button type="submit" className="btn-gradient-primary" style={{ padding: '12px', borderRadius: '8px', marginTop: '10px' }}>
+                Add to Calendar
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+// Extra helper component or icon
+function CalendarPlus({ size, style }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M10 16h4" />
+      <path d="M12 14v4" />
+    </svg>
   );
 }

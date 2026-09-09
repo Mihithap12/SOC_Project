@@ -1,5 +1,14 @@
-com\farmercustomer\orderservice\controller\OrderController.class
 com\farmercustomer\orderservice\repository\OrderRepository.class
-com\farmercustomer\orderservice\entity\Order.class
+com\farmercustomer\orderservice\delegate\ReleaseInventoryDelegate.class
 com\farmercustomer\orderservice\OrderServiceApplication.class
+com\farmercustomer\orderservice\config\JwtUtil.class
+com\farmercustomer\orderservice\config\SecurityConfig.class
+com\farmercustomer\orderservice\delegate\ReserveInventoryDelegate.class
+com\farmercustomer\orderservice\delegate\ProcessPaymentDelegate.class
+com\farmercustomer\orderservice\config\JwtRequestFilter.class
+com\farmercustomer\orderservice\controller\OrderController.class
+com\farmercustomer\orderservice\delegate\DispatchTransportDelegate.class
+com\farmercustomer\orderservice\config\CamundaAutoDeploymentRunner.class
+com\farmercustomer\orderservice\delegate\RefundPaymentDelegate.class
+com\farmercustomer\orderservice\entity\Order.class
 com\farmercustomer\orderservice\service\OrderSagaOrchestrator.class
